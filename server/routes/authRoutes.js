@@ -4,6 +4,6 @@ const { signup, login  , getUserProfile , updateUserProfile} = require('../contr
 
 router.post('/signup', signup);
 router.post('/login', login);
-router.get('/:id', getUserProfile);
-router.put('/:id', updateUserProfile);
+router.get('/profile/:id', getUserProfile);
+router.put('/profile/:id', updateUserProfile);
 module.exports = router;

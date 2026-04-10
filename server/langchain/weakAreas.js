@@ -16,12 +16,19 @@ const llm = new ChatOpenAI({
  */
 async function generateWeakAreas({ question, userAnswer }) {
   const prompt = PromptTemplate.fromTemplate(`
-You are an AI interview coach.
+You are a diagnostic AI specialized in talent assessment and hiring risk evaluation.
+Analyze this interview response for specific technical gaps or communication red flags:
 
 Question: {question}
 User's Answer: {userAnswer}
 
-Identify specific weak areas, gaps, or improvements the user should work on. Be clear and constructive, return only the weak points in one paragraph.
+Identify:
+1. Gaps: Specific technical inaccuracies, lack of depth, or missed opportunities.
+2. Action Points: Concrete steps or topics the user should study to improve this specific answer.
+
+Return your response in the EXACT following format:
+Gaps: [Detailed analysis of weaknesses]
+Action Points: [Bullet points for improvement]
 `);
 
   const input = await prompt.format({ question, userAnswer });

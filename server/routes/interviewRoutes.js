@@ -11,7 +11,7 @@ const {
 router.post('/start', startInterview);
 router.post('/save', saveInterview);
 router.get('/:userId', getInterviews);
-router.post('/get-feedback', getFeedback); // ✅ FIXED: POST and correct path
-router.post('/get-weak-areas', getWeakAreas);
+router.post('/feedback', getFeedback);
+router.post('/weak-areas', getWeakAreas);
 
 module.exports = router;

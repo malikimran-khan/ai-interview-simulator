@@ -3,25 +3,52 @@ const Interview = require('../models/Interview');
 const generateFeedback = require('../langchain/feedback');
 const generateWeakAreas = require('../langchain/weakAreas');
 exports.startInterview = async (req, res) => {
-  const { jobTitle, experience, userId } = req.body;
+  const { jobTitle, experience, userId, questionCount = 3 } = req.body;
   if (!jobTitle || !experience || !userId) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
+
+  // Define Category Sequences
+  const technicalRoles = [
+    'Frontend Developer', 'Backend Developer', 'Full-Stack Developer', 
+    'Data Scientist', 'DevOps Engineer', 'Mobile App Developer', 'Cloud Architect'
+  ];
+
+  const techCategories = [
+    'General Technical / Fundamentals',
+    'Coding / Algorithmic Logic',
+    'System Design / Scalability',
+    'Behavioral / Engineering Culture',
+    'Troubleshooting / Debugging Scenario'
+  ];
+
+  const nonTechCategories = [
+    'Tools & Industry Software',
+    'Domain Principles & Best Practices',
+    'Workflow / Process Management',
+    'Communication & Conflict Resolution',
+    'Case Study / Innovation Scenario'
+  ];
+
+  const isTech = technicalRoles.includes(jobTitle);
+  const selectedCategories = isTech ? techCategories : nonTechCategories;
+
   try {
     const questions = [];
-    for (let i = 0; i < 3; i++) {
-      const question = await generateQuestions({ jobTitle, experience });
-      if (Array.isArray(question)) {
-        questions.push(question[0]); // OR join with space if needed
-      } else {
-        questions.push(question);
-      }
+    for (let i = 0; i < questionCount; i++) {
+      // Rotate through categories if questionCount > categories length
+      const category = selectedCategories[i % selectedCategories.length];
+      const question = await generateQuestions({ jobTitle, experience, category });
+      
+      questions.push(Array.isArray(question) ? question[0] : question);
     }
+
     res.status(200).json({
       userId,
       jobTitle,
       experience,
-      questions, // Now it's a flat array of 3 strings
+      questionCount,
+      questions,
     });
   } catch (error) {
     console.error('LangChain error:', error);
@@ -85,14 +112,15 @@ exports.getFeedback = async (req, res) => {
   try {
     const feedbacks = await Promise.all(
       records.map(async ({ question, userAnswer }) => {
-        if (!question || !userAnswer) {
-          return { question, userAnswer, feedback: 'Invalid input.' };
-        }
+        // Defensive handling for skipped/empty answers
+        const processedAnswer = userAnswer && userAnswer.trim() !== "" 
+          ? userAnswer 
+          : "(The candidate provided no response for this question)";
 
-        const aiResponse = await generateFeedback({ question, userAnswer });
+        const aiResponse = await generateFeedback({ question, userAnswer: processedAnswer });
         return {
           question,
-          userAnswer,
+          userAnswer: userAnswer || "",
           feedback: aiResponse,
         };
       })
@@ -118,14 +146,15 @@ exports.getWeakAreas = async (req, res) => {
   try {
     const weakAreasList = await Promise.all(
       records.map(async ({ question, userAnswer }) => {
-        if (!question || !userAnswer) {
-          return { error: 'Missing question or userAnswer' };
-        }
+        // Defensive handling for skipped/empty answers
+        const processedAnswer = userAnswer && userAnswer.trim() !== "" 
+          ? userAnswer 
+          : "(The candidate provided no response for this question)";
 
-        const weakAreas = await generateWeakAreas({ question, userAnswer });
+        const weakAreas = await generateWeakAreas({ question, userAnswer: processedAnswer });
         return {
           question,
-          userAnswer,
+          userAnswer: userAnswer || "",
           weakAreas,
         };
       })

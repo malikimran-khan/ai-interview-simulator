@@ -1,51 +1,43 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import SideBar from './SideBar';
-import Home from './Home';
-import UserRecord from './UserRecord';
 import UserProfile from './UserProfile';
+import UserRecord from './UserRecord';
 import WeakAreas from './WeakAreas';
-import Logout from './Logout';
+import StatDashboard from './StatDashboard';
 import ActualAnswer from './ActualAnswer';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DashBoard() {
   return (
-    <div className="flex min-h-screen bg-black text-white">
-      {/* Sidebar */}
+    <div className="flex bg-dark min-h-screen text-white font-body selection:bg-primary/30">
+      {/* Fixed Sidebar */}
       <SideBar />
 
-      {/* Content area */}
-      <div className="flex-1 p animate-fadeIn bg-white text-black">
-        <Routes>
-          <Route
-            path="*"
-            element={
-              <h2 className="text-xl text-center font-semibold bg-white text-black p-4 rounded shadow">
-                Select a page
-              </h2>
-            }
-          />
-          <Route path="/home" element={<Home />} />
-          <Route path="/user-record" element={<UserRecord />} />
-          <Route path="/user-profile" element={<UserProfile />} />
-          <Route path="/weak-areas" element={<WeakAreas />} />
-          <Route path="/logout" element={<Logout />} />
-          <Route path="/actual-answer" element={<ActualAnswer />} />
-        </Routes>
-      </div>
-
-      <style>
-        {`
-          @keyframes fadeIn {
-            0% { opacity: 0; transform: translateY(10px); }
-            100% { opacity: 1; transform: translateY(0); }
-          }
-
-          .animate-fadeIn {
-            animation: fadeIn 0.6s ease-out;
-          }
-        `}
-      </style>
+      {/* Dynamic Content Area */}
+      <main className="flex-1 min-h-screen flex flex-col relative">
+        {/* Background Decor */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+        
+        <AnimatePresence mode="wait">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="flex-1 flex flex-col"
+          >
+            <Routes>
+              <Route path="stat-dashboard" element={<StatDashboard />} />
+              <Route path="user-profile" element={<UserProfile />} />
+              <Route path="user-record" element={<UserRecord />} />
+              <Route path="weak-areas" element={<WeakAreas />} />
+              <Route path="actual-answer" element={<ActualAnswer />} />
+              <Route index element={<StatDashboard />} />
+            </Routes>
+          </motion.div>
+        </AnimatePresence>
+      </main>
     </div>
   );
 }

@@ -8,31 +8,46 @@ const llm = new ChatOpenAI({
 
 async function generateFeedback({ question, userAnswer }) {
   const prompt = `
-You are an expert interview coach.
+You are a senior technical interviewer and performance coach at a top-tier tech firm.
+Review the following interview exchange and provide professional feedback:
 
 Question: ${question}
-
 User's Answer: ${userAnswer}
 
-✅ Provide:
-- Constructive feedback on the user's answer.
-- A suggested improved version of the answer.
+Analyze the response based on:
+- Technical Accuracy and Depth.
+- Structure and Clarity (Did the user use the STAR method? Was it concise?).
+- Professionalism and Impact.
 
-Return format:
-Feedback: ...
-Improved Answer: ...
+Provide:
+1. Feedback: A detailed, constructive analysis highlighting strengths and specific areas for improvement.
+2. Improved Answer: A high-quality, exemplary version of the answer that demonstrates mastery of the topic.
+
+Return your response in the EXACT following format:
+Feedback: [Detailed feedback here]
+Improved Answer: [Complete professional answer here]
   `;
 
   const res = await llm.invoke(prompt);
-
   const content = res.content;
-  const feedbackMatch = content.match(/Feedback:\s*(.*)/i);
-  const improvedMatch = content.match(/Improved Answer:\s*(.*)/i);
 
-  return {
-    feedback: feedbackMatch ? feedbackMatch[1].trim() : 'No feedback.',
-    improved: improvedMatch ? improvedMatch[1].trim() : 'No improved answer.',
-  };
+  // Robust Marker-based Parsing
+  let feedback = 'No feedback generated.';
+  let improved = 'No blueprint generated.';
+
+  try {
+    if (content.includes('Feedback:') && content.includes('Improved Answer:')) {
+      const parts = content.split('Improved Answer:');
+      feedback = parts[0].replace('Feedback:', '').trim();
+      improved = parts[1].trim();
+    } else if (content.includes('Feedback:')) {
+       feedback = content.replace('Feedback:', '').trim();
+    }
+  } catch (err) {
+    console.error('Parsing error in feedback.js:', err);
+  }
+
+  return { feedback, improved };
 }
 
 module.exports = generateFeedback;

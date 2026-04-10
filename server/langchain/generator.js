@@ -9,29 +9,35 @@ const llm = new ChatOpenAI({
 });
 
 /**
- * Generate 3 interview questions based on job title and experience.
+ * Generate a single interview question based on role, experience, and category.
  * @param {Object} param0
  * @param {string} param0.jobTitle
  * @param {string} param0.experience
- * @returns {Promise<string>} A single interview question as a string
+ * @param {string} param0.category
+ * @returns {Promise<string>} 
  */
-async function generateQuestions({ jobTitle, experience }) {
+async function generateQuestions({ jobTitle, experience, category }) {
   const prompt = PromptTemplate.fromTemplate(
-    `Generate 3 unique interview questions for a {experience} level {jobTitle}. Return them as a numbered list.`
+    `You are an elite Tech Recruiter and hiring manager for a global leader in innovation.
+    Your goal is to generate a single, highly relevant, and challenging interview question in the following category: {category}.
+    
+    Target Profile:
+    - Role: {jobTitle}
+    - Level: {experience}
+    - Focus Area: {category}
+
+    Ensure the question is:
+    1. Specifically tailored to {jobTitle} at a {experience} level.
+    2. Deeply related to {category}.
+    3. Practical and designed to reveal the candidate's true depth and logic.
+
+    Return only the question text as a single string.`
   );
 
-  const input = await prompt.format({ jobTitle, experience });
+  const input = await prompt.format({ jobTitle, experience, category });
   const res = await llm.invoke(input);
 
-  // Split and clean the questions
-  const lines = res.content
-    .split('\n')
-    .map((q) => q.replace(/^\d+\.\s*/, '').trim())
-    .filter((q) => q.length > 0);
-
-  // Return only one question per function call
-  // So that each API call gives one clean string
-  return lines[0]; // return only one question string
+  return res.content.trim();
 }
 
 module.exports = generateQuestions;

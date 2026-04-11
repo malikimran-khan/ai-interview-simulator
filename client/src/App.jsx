@@ -18,14 +18,16 @@ function AppContent() {
     <>
       {!hideNavbar && <UserNavbar />}
 
-      <Routes>
-        <Route path='/' element={<Home />} />
-        <Route path='/login' element={<UserLogin />} />
-        <Route path='/signup' element={<UserSignup />} />
-        <Route path='/choose-role' element={<ChooseRole />} />
-        <Route path='/interview' element={<InterView />} />
-        <Route path='/dashboard/*' element={<DashBoard />} />
-      </Routes>
+      <div className={!hideNavbar ? "pt-24" : ""}>
+        <Routes>
+          <Route path='/' element={<Home />} />
+          <Route path='/login' element={<UserLogin />} />
+          <Route path='/signup' element={<UserSignup />} />
+          <Route path='/choose-role' element={<ChooseRole />} />
+          <Route path='/interview' element={<InterView />} />
+          <Route path='/dashboard/*' element={<DashBoard />} />
+        </Routes>
+      </div>
     </>
   );
 }
